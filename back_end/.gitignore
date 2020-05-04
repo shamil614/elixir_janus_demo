@@ -1,0 +1,75 @@
+# App artifacts
+/_build
+/db
+/deps
+/*.ez
+/.bundle
+/priv/static
+
+assets/node_modules
+
+# Generate on crash by the VM
+erl_crash.dump
+
+# The config/prod.secret.exs file by default contains sensitive
+# data and you should not commit it into version control.
+#
+# Alternatively, you may comment the line below and commit the
+# secrets file as long as you replace its contents by environment
+# variables.
+/config/prod.secret.exs
+
+# Dev config files
+Procfile.dev
+.env
+.iex.exs
+.elixir_ls
+
+# Vim files
+*.swp
+*.swo
+
+# Mac files
+*.DS_Store
+*/.DS_Store
+
+# DB and Redis
+vendor/postgresql
+vendor/redis
+
+# Documentation is statically compiled. Should not go in repo.
+doc/
+
+# IntelliJ project files
+/.idea
+*.iml
+
+# mix test --cover output
+/cover
+
+# mix dialyzer.plt output
+.local.plt
+
+# emacs temp files
+.#*
+
+# VSCode config
+.vscode
+
+uploads/*
+
+# files used to diffing test output
+/actual.ex
+/expected.ex
+
+# Env settings outside docker
+.envrc*
+.direnv
+.tool-versions*
+
+# Benchmark files
+*.snapshot
+
+scripts/*
+
+.env*

@@ -1,0 +1,28 @@
+<div class="row">
+    <div class="col-md-3">
+        <h3>
+        Rooms <%= link "+", to: "/rooms/new", class: "btn btn-success" %>
+        </h3>
+
+        <ul class="list-group">
+            <%= for room <- @rooms do %>
+                <li class="list-group-item">
+                    <%= link room.name, to: Routes.room_path(@conn, :show, room.id) %>
+                </li>
+            <% end %>
+        </ul>
+    </div>
+    <div class="col-md-9">
+        <div class="jumbotron">
+            <div class="page-header">
+                <h2>Welcome to the WebRTC Demo</h2>
+            </div>
+            <div class="page-header">
+                <h2><small>Choose the room on the left to join</small></h2>
+                <h2><small>or
+                    <%= link "Create", to: Routes.room_path(@conn, :new), class: "btn btn-success" %>
+                    a new one</small></h2>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+# ---- Build Stage ----
+FROM erlang:21 AS app_builder
+
+# Alternative PPA for newer version of Node
+RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+RUN /bin/bash nodesource_setup.sh
+
+RUN apt-get install -y apt-utils nodejs
+
+RUN nodejs -v
+
+# Set environment variables for building the application
+ENV MIX_ENV=prod \
+    LANG=C.UTF-8
+
+# Fetch the latest version of Elixir (once the 1.9 docker image is available you won't have to do this)
+RUN set -xe \
+  && ELIXIR_DOWNLOAD_URL="https://github.com/elixir-lang/elixir/archive/v1.9.1.tar.gz" \
+  && ELIXIR_DOWNLOAD_SHA256="94daa716abbd4493405fb2032514195077ac7bc73dc2999922f13c7d8ea58777" \
+  && curl -fSL -o elixir-src.tar.gz $ELIXIR_DOWNLOAD_URL \
+  && echo "$ELIXIR_DOWNLOAD_SHA256  elixir-src.tar.gz" | sha256sum -c - \
+  && mkdir -p /usr/local/src/elixir \
+  && tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
+  && rm elixir-src.tar.gz \
+  && cd /usr/local/src/elixir \
+  && make install clean
+
+# Install hex and rebar
+RUN mix local.hex --force && \
+    mix local.rebar --force
+
+# Create the application build directory
+RUN mkdir /app
+WORKDIR /app
+
+# Copy over all the necessary application files and directories
+COPY config ./config
+COPY lib ./lib
+COPY priv ./priv
+COPY mix.exs .
+COPY mix.lock .
+
+# Fetch the application dependencies and build the application
+RUN HEX_HTTP_CONCURRENCY=1 HEX_HTTP_TIMEOUT=360 mix deps.get
+RUN mix deps.compile
+RUN mix phx.digest
+RUN mix release
+
+# build assets
+COPY assets assets
+RUN cd assets && rm -rf node_modules && npm install && npm run deploy
+RUN mix phx.digest
+
+# ---- Application Stage ----
+FROM debian:10-slim AS app
+
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
+# Install openssl and other erlang deps
+RUN apt-get update && apt-get install -y openssl libncursesw5 libncursesw5-dev
+
+ENV LANG=C.UTF-8
+
+# Copy over the build artifact from the previous step and create a non root user
+RUN useradd --create-home app
+WORKDIR /home/app
+COPY --from=app_builder /app/_build .
+RUN chown -R app: ./prod
+USER app
+
+# Run the Phoenix app
+# CMD ["ls"]
+CMD ["./prod/rel/acd/bin/acd", "start"]

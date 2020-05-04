@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>WebRTC Demo</title>
+    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
+  </head>
+  <body>
+    <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+        <h5 class="my-0 mr-md-auto font-weight-normal">
+            <a href="/" class="navbar-brand text-dark"><strong>ACD</strong></a>
+        </h5>
+        <%= if @user_signed_in? do %>
+            <nav class="my-2 my-md-0 mr-md-3">
+                Signed in as: <strong><%= Acd.Auth.current_user(@conn).username %></strong>
+            </nav>
+            <%= link "Sign out", to: Routes.session_path(@conn, :delete), method: :delete, class: "btn btn-outline-primary" %>
+        <% else %>
+            <%= link "Sign In",
+            to: Routes.session_path(@conn, :new),
+            class: "btn btn-outline-primary" %>
+
+            <%= link "Sign Up",
+            to: Routes.registration_path(@conn, :new),
+            class: "btn btn-outline-primary ml-md-3" %>
+        <% end %>
+    </div>
+
+    <main role="main" class="container">
+      <%= unless is_nil(get_flash(@conn, :info)) do %>
+      <p class="alert alert-success" role="alert"><%= get_flash(@conn, :info) %></p>
+      <% end %>
+      <%= unless is_nil(get_flash(@conn, :error)) do %>
+      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+      <% end %>
+
+      <%= render @view_module, @view_template, assigns %>
+    </main>
+    <%= unless is_nil(Acd.Auth.current_user(@conn)) do %>
+    <script>window.userToken = "<%= assigns[:user_token] %>"</script>
+    <script>window.userName = "<%= Acd.Auth.current_user(@conn).username %>"</script>
+    <% end %>
+    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
+  </body>
+</html>

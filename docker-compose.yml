@@ -1,0 +1,56 @@
+version: '3'
+services:
+  database:
+    image: postgres:9.6
+    container_name: janus_postgres
+    ports:
+      - "5432:5432"
+  # uncomment to run Elixir Phoenix via docker
+  #web:
+  #  build: .
+  #  depends_on:
+  #    - "nginx"
+  #    - "database"
+  #    - "janus"
+  #  command: bash -c "./bin/docker_web_start"
+  #  volumes:
+  #    - ./bin:/code/bin
+  #    - ./back_end:/code:cached
+  #    - ./back_end/_build:/code/_build
+  #    - ./back_end/cover:/code/cover
+  #    - ./back_end/deps:/code/deps
+  #    - ./back_end/doc:/code/doc
+  #  ports:
+  #    - "4000:4000"
+  janus:
+    image: "shamilton614/janus:latest"
+    container_name: janus
+    command: "./opt/janus/bin/janus --stun-server=stun.l.google.com:19302 --nat-1-1=${DOCKER_IP} --ice-lite" 
+    environment:
+      - DOCKER_IP=${DOCKER_IP}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "3478:3478"
+      - "5349:5349"
+      - "7088:7088"
+      - "7188:7188"
+      - "8088:8088"
+      - "8188:8188"
+      - "19302:19302"
+      - "65382:65382"
+      - "10000-10200:10000-10200/udp"
+    volumes:
+      - ./janus/conf/janus.transport.http.jcfg:/opt/janus/etc/janus/janus.transport.http.jcfg
+      - ./janus/conf/janus.transport.websockets.jcfg:/opt/janus/etc/janus/janus.transport.websockets.jcfg
+      - ./janus/conf/janus.jcfg:/opt/janus/etc/janus/janus.jcfg
+      - ./janus/conf/janus.plugin.videoroom.jcfg:/opt/janus/etc/janus/janus.plugin.videoroom.jcfg
+      
+  nginx:
+    image: nginx:alpine
+    container_name: janus_nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/html:/www/html

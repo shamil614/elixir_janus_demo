@@ -1,0 +1,19 @@
+#!/bin/bash
+
+cd back_end
+
+cd assets
+npm install
+cd -
+
+# Get dependencies
+mix deps.get
+
+# Attempt to create the db
+mix ecto.create
+
+# Migrate the db
+mix ecto.migrate
+
+# Start the web server
+elixir -S mix phx.server

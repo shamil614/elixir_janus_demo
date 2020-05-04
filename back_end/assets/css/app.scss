@@ -1,0 +1,15 @@
+/* This file is for your main application css. */
+
+// @import "./phoenix.css";
+
+
+@import "custom";
+@import "~bootstrap/scss/bootstrap";
+@import "~@fortawesome/fontawesome-free/scss/fontawesome";
+
+
+.tiled > video {
+    width: 300px;
+    float: left;
+    margin: 0 10px 10px 0;
+}
